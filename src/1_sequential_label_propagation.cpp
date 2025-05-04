@@ -28,6 +28,7 @@ void find_communities(Hypergraph& H) {
     std::size_t iter = 0;
 
     while (!stop && iter < MaxIterations) {
+        std::cout << "iter: " << iter << std::endl;
         stop = true;
 
         std::shuffle(edges.begin(), edges.end(), rng);
