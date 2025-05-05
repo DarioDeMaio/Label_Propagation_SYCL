@@ -55,6 +55,7 @@
         "numeric": "cpp",
         "optional": "cpp",
         "random": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "string": "cpp"
     }
 }

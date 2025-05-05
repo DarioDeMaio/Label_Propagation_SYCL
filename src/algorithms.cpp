@@ -12,7 +12,7 @@
 
 constexpr std::size_t MaxIterations = 100;
 
-void find_communities(Hypergraph& H) {
+void sequential_find_communities(Hypergraph& H) {
     std::mt19937 rng(std::random_device{}());
 
     std::vector<std::uint32_t>& vlabels = H.vertex_labels;
@@ -31,7 +31,6 @@ void find_communities(Hypergraph& H) {
         std::cout << "iter: " << iter << std::endl;
         stop = true;
 
-        std::shuffle(edges.begin(), edges.end(), rng);
         for (std::size_t e : edges) {
             std::unordered_map<uint32_t, std::size_t> label_counts;
 
@@ -57,7 +56,6 @@ void find_communities(Hypergraph& H) {
             }
         }
 
-        std::shuffle(vertices.begin(), vertices.end(), rng);
         for (std::size_t v : vertices) {
             std::unordered_map<uint32_t, std::size_t> label_counts;
 
@@ -89,63 +87,4 @@ void find_communities(Hypergraph& H) {
 
         iter++;
     }
-}
-
-int main() {
-    std::size_t num_vertices = 10;
-    std::size_t num_hyperedges = 6;
-    double probability = 0.3;
-
-    Hypergraph H = generate_hypergraph(num_vertices, num_hyperedges, probability);
-
-    std::cout << "Number of vertices: " << H.num_vertices << std::endl;
-    std::cout << "Number of hyperedges: " << H.num_hyperedges << std::endl;
-
-    std::cout << "Vertex labels: ";
-    for (auto label : H.vertex_labels) {
-        std::cout << label << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Hyperedge labels: ";
-    for (auto label : H.hyperedge_labels) {
-        std::cout << label << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "he2v index: ";
-    for (auto index : H.he2v_indices) {
-        std::cout << index << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "he2v offset: ";
-    for (auto offset : H.he2v_offsets) {
-        std::cout << offset << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "----------------------------------------------" << std::endl;
-
-    std::cout << "Initial vertex labels:\n";
-    for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
-        auto label = H.vertex_labels[i];
-        std::cout << "v" << i << ": " 
-                  << (label == std::numeric_limits<uint32_t>::max() ? "?" : std::to_string(label)) 
-                  << "\n";
-    }
-
-    find_communities(H);
-
-    std::cout << "\nFinal vertex labels:\n";
-    for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
-        std::cout << "v" << i << ": " << H.vertex_labels[i] << "\n";
-    }
-
-    std::cout << "\nFinal hyperedge labels:\n";
-    for (std::size_t i = 0; i < H.hyperedge_labels.size(); ++i) {
-        std::cout << "e" << i << ": " << H.hyperedge_labels[i] << "\n";
-    }
-
-    return 0;
 }
