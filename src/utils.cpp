@@ -52,8 +52,8 @@ Hypergraph generate_hypergraph(std::size_t N, std::size_t E, double p) {
     H.v2he_offsets = std::move(v2he_offsets);
 
     H.vertex_labels.resize(N);
-    std::uniform_int_distribution<int> label_dist(0, 2);
-    std::bernoulli_distribution labeled(0.5);
+    std::uniform_int_distribution<int> label_dist(0, 5);
+    std::bernoulli_distribution labeled(0.4);
 
     for (size_t i = 0; i < N; ++i) {
         if (labeled(rng)) {
