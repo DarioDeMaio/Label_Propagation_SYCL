@@ -48,16 +48,13 @@ Make sure you have Docker installed. Then, run:
 ```bash
 docker pull intel/oneapi-hpckit:latest
 
-docker run -it --rm \
-    -v $(pwd):/workspace \
-    -w /workspace \
-    intel/oneapi-hpckit:latest /bin/bash
+docker run -it --gpus all --rm -v "$(pwd):/workspace" -w /workspace intel/oneapi-hpckit:latest /bin/bash
 ```
 
 # Compiling and Running the Code
 
 ```bash
-dpcpp -o main main.cpp
+icpx -fsycl 1_baseline_label_propagation.cpp ../base_implementation/algoritmhs.cpp ../base_implementation/utils.cpp -o label_prop
 ./main
 ```
 

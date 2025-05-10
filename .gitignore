@@ -33,3 +33,6 @@
 
 # log
 logs/
+
+# results
+results/
