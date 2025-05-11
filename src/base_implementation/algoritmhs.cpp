@@ -127,7 +127,13 @@ void find_communities(HypergraphNotSparse& H) {
 }
 
 void find_communities_transpose(HypergraphNotSparse& H) {
-    sycl::queue q(sycl::default_selector_v, sycl::property::queue::enable_profiling{});
+    sycl::queue q;
+    try {
+        q = sycl::queue(sycl::gpu_selector{}, sycl::property::queue::enable_profiling{});
+    } catch (sycl::exception const& e) {
+        std::cout << "GPU non disponibile, uso la CPU.\n";
+        q = sycl::queue(sycl::cpu_selector{}, sycl::property::queue::enable_profiling{});
+    }
     const size_t N = H.num_vertices;
     const size_t E = H.num_hyperedges;
 
