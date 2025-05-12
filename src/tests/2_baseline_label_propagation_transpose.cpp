@@ -12,8 +12,8 @@
 #include "../base_implementation/headers/utils.h"
 
 int main() {
-    std::size_t num_vertices = 10000;
-    std::size_t num_hyperedges = 50000;
+    std::size_t num_vertices = 1000;
+    std::size_t num_hyperedges = 3000;
     double probability = 0.3;
 
     // std::cout << "Generating hypergraph..." << std::endl;
@@ -56,6 +56,10 @@ int main() {
     std::cout << "\n Starting find_communities:\n";
     find_communities_transpose(H);
     std::cout << "Done." << std::endl;
+
+    std::cout << "\nSize vertex_labels: " << H.vertex_labels.size() << "\n";
+    std::cout << "Size hyperedge_labels: " << H.hyperedge_labels.size() << "\n";
+
     
     std::cout << "\nFinal vertex labels:\n";
     for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {

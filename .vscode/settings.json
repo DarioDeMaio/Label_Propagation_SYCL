@@ -56,6 +56,11 @@
         "optional": "cpp",
         "random": "cpp",
         "xhash": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "chrono": "cpp",
+        "forward_list": "cpp",
+        "iomanip": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp"
     }
 }
