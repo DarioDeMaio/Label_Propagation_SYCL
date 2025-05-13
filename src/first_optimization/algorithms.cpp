@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <limits>
 #include <iostream>
-#include "first_optimization/headers/utils.h"
+#include "../first_optimization/headers/utils.h"
 #include <random>
 #include <numeric>
 #include <vector>
@@ -17,6 +17,12 @@ constexpr std::size_t MaxIterations = 100;
 
 void first_parallel_find_communities(Hypergraph& H) {
     sycl::queue q;
+    try {
+        q = sycl::queue(sycl::device{sycl::gpu_selector_v}, sycl::property::queue::enable_profiling{});
+    } catch (sycl::exception const& e) {
+        std::cout << "GPU non disponibile, uso la CPU.\n";
+        sycl::queue(sycl::device{ sycl::cpu_selector_v });
+    }
 
     const size_t N = H.num_vertices;
     const size_t E = H.num_hyperedges;

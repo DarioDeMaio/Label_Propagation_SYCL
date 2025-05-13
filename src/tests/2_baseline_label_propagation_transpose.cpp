@@ -57,19 +57,19 @@ int main() {
     find_communities_transpose(H);
     std::cout << "Done." << std::endl;
 
-    std::cout << "\nSize vertex_labels: " << H.vertex_labels.size() << "\n";
-    std::cout << "Size hyperedge_labels: " << H.hyperedge_labels.size() << "\n";
+    // std::cout << "\nSize vertex_labels: " << H.vertex_labels.size() << "\n";
+    // std::cout << "Size hyperedge_labels: " << H.hyperedge_labels.size() << "\n";
 
     
-    std::cout << "\nFinal vertex labels:\n";
-    for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
-        std::cout << "v" << i << ": " << H.vertex_labels[i] << "\n";
-    }
+    // std::cout << "\nFinal vertex labels:\n";
+    // for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
+    //     std::cout << "v" << i << ": " << H.vertex_labels[i] << "\n";
+    // }
 
-    std::cout << "\nFinal hyperedge labels:\n";
-    for (std::size_t i = 0; i < H.hyperedge_labels.size(); ++i) {
-        std::cout << "e" << i << ": " << H.hyperedge_labels[i] << "\n";
-    }
+    // std::cout << "\nFinal hyperedge labels:\n";
+    // for (std::size_t i = 0; i < H.hyperedge_labels.size(); ++i) {
+    //     std::cout << "e" << i << ": " << H.hyperedge_labels[i] << "\n";
+    // }
 
     return 0;
 }

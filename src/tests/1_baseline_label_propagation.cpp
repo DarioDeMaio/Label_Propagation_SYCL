@@ -12,8 +12,8 @@
 #include "../base_implementation/headers/utils.h"
 
 int main() {
-    std::size_t num_vertices = 10000;
-    std::size_t num_hyperedges = 50000;
+    std::size_t num_vertices = 3000;
+    std::size_t num_hyperedges = 9000;
     double probability = 0.3;
 
     // std::cout << "Generating hypergraph..." << std::endl;
@@ -57,15 +57,15 @@ int main() {
     find_communities(H);
     std::cout << "Done." << std::endl;
     
-    std::cout << "\nFinal vertex labels:\n";
-    for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
-        std::cout << "v" << i << ": " << H.vertex_labels[i] << "\n";
-    }
+    // std::cout << "\nFinal vertex labels:\n";
+    // for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
+    //     std::cout << "v" << i << ": " << H.vertex_labels[i] << "\n";
+    // }
 
-    std::cout << "\nFinal hyperedge labels:\n";
-    for (std::size_t i = 0; i < H.hyperedge_labels.size(); ++i) {
-        std::cout << "e" << i << ": " << H.hyperedge_labels[i] << "\n";
-    }
+    // std::cout << "\nFinal hyperedge labels:\n";
+    // for (std::size_t i = 0; i < H.hyperedge_labels.size(); ++i) {
+    //     std::cout << "e" << i << ": " << H.hyperedge_labels[i] << "\n";
+    // }
 
     return 0;
 }
