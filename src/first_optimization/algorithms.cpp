@@ -29,12 +29,18 @@ void first_parallel_find_communities(Hypergraph& H) {
 
     constexpr std::size_t MaxIterations = 100;
 
-    sycl::buffer<uint32_t> vlabels_buf(H.vertex_labels.data(), sycl::range<1>(N));
-    sycl::buffer<uint32_t> helabels_buf(H.hyperedge_labels.data(), sycl::range<1>(E));
-    sycl::buffer<uint32_t> he2v_indices_buf(H.he2v_indices.data(), sycl::range<1>(H.he2v_indices.size()));
-    sycl::buffer<uint32_t> he2v_offsets_buf(H.he2v_offsets.data(), sycl::range<1>(H.he2v_offsets.size()));
-    sycl::buffer<uint32_t> v2he_indices_buf(H.v2he_indices.data(), sycl::range<1>(H.v2he_indices.size()));
-    sycl::buffer<uint32_t> v2he_offsets_buf(H.v2he_offsets.data(), sycl::range<1>(H.v2he_offsets.size()));
+    uint32_t* vlabels_usm = sycl::malloc_shared<uint32_t>(N, q);
+    std::copy(H.vertex_labels.begin(), H.vertex_labels.end(), vlabels_usm);
+    uint32_t* helabels_usm = sycl::malloc_shared<uint32_t>(E, q);
+    std::copy(H.hyperedge_labels.begin(), H.hyperedge_labels.end(), helabels_usm);
+    uint32_t* he2v_indices_usm = sycl::malloc_shared<uint32_t>(H.he2v_indices.size(), q);
+    std::copy(H.he2v_indices.begin(), H.he2v_indices.end(), he2v_indices_usm);
+    uint32_t* he2v_offsets_usm = sycl::malloc_shared<uint32_t>(H.he2v_offsets.size(), q);
+    std::copy(H.he2v_offsets.begin(), H.he2v_offsets.end(), he2v_offsets_usm);
+    uint32_t* v2he_indices_usm = sycl::malloc_shared<uint32_t>(H.v2he_indices.size(), q);
+    std::copy(H.v2he_indices.begin(), H.v2he_indices.end(), v2he_indices_usm);
+    uint32_t* v2he_offsets_usm = sycl::malloc_shared<uint32_t>(H.v2he_offsets.size(), q);
+    std::copy(H.v2he_offsets.begin(), H.v2he_offsets.end(), v2he_offsets_usm);
 
     bool stop = false;
     bool stop_flag_host = true;
@@ -43,10 +49,10 @@ void first_parallel_find_communities(Hypergraph& H) {
         std::cout << "SYCL iter: " << iter << std::endl;
 
         q.submit([&](sycl::handler& h) {
-            auto vlabels = vlabels_buf.get_access<sycl::access::mode::read>(h);
-            auto helabels = helabels_buf.get_access<sycl::access::mode::write>(h);
-            auto he2v_indices = he2v_indices_buf.get_access<sycl::access::mode::read>(h);
-            auto he2v_offsets = he2v_offsets_buf.get_access<sycl::access::mode::read>(h);
+            auto vlabels = vlabels_usm;
+            auto helabels = helabels_usm;
+            auto he2v_indices = he2v_indices_usm;
+            auto he2v_offsets = he2v_offsets_usm;
 
             h.parallel_for(sycl::range<1>(E), [=](sycl::id<1> e_id) {
                 uint32_t label_counts[256] = {0};
@@ -73,17 +79,18 @@ void first_parallel_find_communities(Hypergraph& H) {
                     helabels[e_id] = best_label;
                 }
             });
-        });
+        }).wait();
 
         stop_flag_host = true;
-        sycl::buffer<bool, 1> stop_buf(&stop_flag_host, sycl::range<1>(1));
+        bool* stop_flag_usm = sycl::malloc_shared<bool>(1, q);
+        *stop_flag_usm = stop_flag_host;
 
         q.submit([&](sycl::handler& h) {
-            auto vlabels = vlabels_buf.get_access<sycl::access::mode::read_write>(h);
-            auto helabels = helabels_buf.get_access<sycl::access::mode::read>(h);
-            auto v2he_indices = v2he_indices_buf.get_access<sycl::access::mode::read>(h);
-            auto v2he_offsets = v2he_offsets_buf.get_access<sycl::access::mode::read>(h);
-            auto stop_flag = stop_buf.get_access<sycl::access::mode::write>(h);
+            auto vlabels = vlabels_usm;
+            auto helabels = helabels_usm;
+            auto v2he_indices = v2he_indices_usm;
+            auto v2he_offsets = v2he_offsets_usm;
+            auto stop_flag = stop_flag_usm;
 
             h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> v_id) {
                 uint32_t label_counts[256] = {0};
@@ -111,15 +118,10 @@ void first_parallel_find_communities(Hypergraph& H) {
                     stop_flag[0] = false;
                 }
             });
-        });
+        }).wait();
 
-        q.wait();
-
-        sycl::host_accessor stop_acc(stop_buf, sycl::read_only);
-        stop = stop_acc[0];
+        stop = *stop_flag_usm;
+        sycl::free(stop_flag_usm, q);
     }
 
-    q.submit([&](sycl::handler& h) {
-        auto acc = vlabels_buf.get_access<sycl::access::mode::read>(h);
-    }).wait();
 }

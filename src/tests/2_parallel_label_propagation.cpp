@@ -11,13 +11,13 @@
 #include "../first_optimization/headers/algorithms.h"
 
 int main() {
-    std::size_t num_vertices = 10;
-    std::size_t num_hyperedges = 5;
+    std::size_t num_vertices = 10000;
+    std::size_t num_hyperedges = 30000;
     double probability = 0.3;
 
-    std::cout << "Generating hypergraph..." << std::endl;
+    // std::cout << "Generating hypergraph..." << std::endl;
     Hypergraph H = generate_hypergraph(num_vertices, num_hyperedges, probability);
-    std::cout << "Done." << std::endl;
+    // std::cout << "Done." << std::endl;
 
     // std::cout << "Number of vertices: " << H.num_vertices << std::endl;
     // std::cout << "Number of hyperedges: " << H.num_hyperedges << std::endl;
