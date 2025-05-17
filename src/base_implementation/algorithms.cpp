@@ -26,6 +26,7 @@ void find_communities(HypergraphNotSparse& H) {
             incidence_matrix_usm[i * E + j] = (j < H.incidence_matrix[i].size()) ? H.incidence_matrix[i][j] : 0;
         }
     }
+    
     std::copy(H.vertex_labels.begin(), H.vertex_labels.end(), vlabels_usm);
     std::copy(H.hyperedge_labels.begin(), H.hyperedge_labels.end(), helabels_usm);
 
@@ -137,11 +138,28 @@ void find_communities_transpose(HypergraphNotSparse& H) {
     size_t* edge_indices_usm = sycl::malloc_shared<size_t>(E, q);
     size_t* vertex_indices_usm = sycl::malloc_shared<size_t>(N, q);
 
+    
+    // std::cout << "Incidence matrix:\n";
+    // for (size_t i = 0; i < H.num_vertices; ++i) {
+    //     for (size_t j = 0; j < H.num_hyperedges; ++j) {
+    //         std::cout << H.incidence_matrix[i][j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+
     for (size_t v = 0; v < N; ++v) {
         for (size_t e = 0; e < H.incidence_matrix[v].size(); ++e) {
             incidence_matrix_T[e * N + v] = H.incidence_matrix[v][e];
         }
     }
+
+    // std::cout << "Incidence matrix transposed:\n";
+    // for (size_t i = 0; i < E; ++i) {
+    //     for (size_t j = 0; j < N; ++j) {
+    //         std::cout << incidence_matrix_T[i * N + j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     std::copy(H.vertex_labels.begin(), H.vertex_labels.end(), vlabels_usm);
     std::copy(H.hyperedge_labels.begin(), H.hyperedge_labels.end(), helabels_usm);

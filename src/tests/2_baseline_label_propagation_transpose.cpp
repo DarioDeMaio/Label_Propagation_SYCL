@@ -12,8 +12,8 @@
 #include "../base_implementation/headers/utils.h"
 
 int main() {
-    std::size_t num_vertices = 10000;
-    std::size_t num_hyperedges = 30000;
+    std::size_t num_vertices = 5;
+    std::size_t num_hyperedges = 10;
     double probability = 0.3;
 
     // std::cout << "Generating hypergraph..." << std::endl;
