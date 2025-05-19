@@ -54,7 +54,7 @@ docker run -it --gpus all --rm -v "$(pwd):/workspace" -w /workspace intel/oneapi
 # Compiling and Running the Code
 
 ```bash
-icpx -fsycl 1_baseline_label_propagation.cpp ../base_implementation/algoritmhs.cpp ../base_implementation/utils.cpp -o label_prop.exe
+icpx -fsycl 1_baseline_label_propagation.cpp ../base_implementation/algorithms.cpp ../base_implementation/utils.cpp -o label_prop.exe
 ./main
 ```
 

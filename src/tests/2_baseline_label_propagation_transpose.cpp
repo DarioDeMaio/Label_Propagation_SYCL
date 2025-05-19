@@ -10,10 +10,12 @@
 #include <string>
 #include "../base_implementation/headers/algorithms.h"
 #include "../base_implementation/headers/utils.h"
+#include <chrono>
+#include <sycl/sycl.hpp>
 
 int main() {
-    std::size_t num_vertices = 5;
-    std::size_t num_hyperedges = 10;
+    std::size_t num_vertices = 1000000;
+    std::size_t num_hyperedges = 5000000;
     double probability = 0.3;
 
     // std::cout << "Generating hypergraph..." << std::endl;
@@ -53,7 +55,9 @@ int main() {
     //               << "\n";
     // }
 
-    // std::cout << "\n Starting find_communities:\n";
+    std::cout << "Baseline Label Propagation:\n" << std::endl;
+    find_communities(H);
+    std::cout << "Optimized Label Propagation:\n" << std::endl;
     find_communities_transpose(H);
     // std::cout << "Done." << std::endl;
 

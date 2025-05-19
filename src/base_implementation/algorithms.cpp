@@ -11,7 +11,16 @@ using namespace sycl;
 constexpr std::size_t MaxIterations = 100;
 
 void find_communities(HypergraphNotSparse& H) {
-    sycl::queue q(sycl::default_selector_v, sycl::property::queue::enable_profiling{});
+    sycl::queue q;
+    try {
+        sycl::queue q(sycl::gpu_selector_v);
+        std::cout << "Selected device: "
+                << q.get_device().get_info<sycl::info::device::name>() << std::endl;
+    } catch (sycl::exception const& e) {
+        std::cerr << "Failed to create SYCL queue: " << e.what() << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     const size_t N = H.num_vertices;
     const size_t E = H.num_hyperedges;
 
@@ -45,19 +54,19 @@ void find_communities(HypergraphNotSparse& H) {
         sycl::event edge_event = q.submit([&](sycl::handler& h) {
             h.parallel_for(range<1>(E), [=](id<1> idx) {
                 size_t e = edge_indices_usm[idx];
-                uint32_t label_counts[1024] = {0};
+                uint32_t label_counts[128] = {0};
 
                 for (size_t v = 0; v < N; ++v) {
                     if (incidence_matrix_usm[v * E + e] == 1) {
                         uint32_t lbl = vlabels_usm[v];
-                        if (lbl < 1024 && lbl != std::numeric_limits<uint32_t>::max()) {
+                        if (lbl < 128 && lbl != std::numeric_limits<uint32_t>::max()) {
                             label_counts[lbl]++;
                         }
                     }
                 }
 
                 uint32_t max_count = 0, best_label = std::numeric_limits<uint32_t>::max();
-                for (size_t i = 0; i < 1024; ++i) {
+                for (size_t i = 0; i < 128; ++i) {
                     if (label_counts[i] > max_count) {
                         max_count = label_counts[i];
                         best_label = i;
@@ -80,19 +89,19 @@ void find_communities(HypergraphNotSparse& H) {
         sycl::event vertex_event = q.submit([&](sycl::handler& h) {
             h.parallel_for(range<1>(N), [=](id<1> idx) {
                 size_t v = vertex_indices_usm[idx];
-                uint32_t label_counts[1024] = {0};
+                uint32_t label_counts[128] = {0};
 
                 for (size_t e = 0; e < E; ++e) {
                     if (incidence_matrix_usm[v * E + e] == 1) {
                         uint32_t lbl = helabels_usm[e];
-                        if (lbl < 1024 && lbl != std::numeric_limits<uint32_t>::max()) {
+                        if (lbl < 128 && lbl != std::numeric_limits<uint32_t>::max()) {
                             label_counts[lbl]++;
                         }
                     }
                 }
 
                 uint32_t max_count = 0, best_label = vlabels_usm[v];
-                for (size_t i = 0; i < 1024; ++i) {
+                for (size_t i = 0; i < 128; ++i) {
                     if (label_counts[i] > max_count) {
                         max_count = label_counts[i];
                         best_label = i;
@@ -127,8 +136,42 @@ void find_communities(HypergraphNotSparse& H) {
     sycl::free(vertex_indices_usm, q);
 }
 
+void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<uint32_t>>& incidence_matrix, uint32_t* incidence_matrix_T, size_t N, size_t E) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    uint32_t* incidence_flat = sycl::malloc_shared<uint32_t>(N * E, q);
+
+    for (size_t v = 0; v < N; ++v) {
+        for (size_t e = 0; e < E; ++e) {
+            incidence_flat[v * E + e] = incidence_matrix[v][e];
+        }
+    }
+
+    q.parallel_for(sycl::range<2>(E, N), [=](sycl::id<2> idx) {
+        size_t e = idx[0];
+        size_t v = idx[1];
+        incidence_matrix_T[e * N + v] = incidence_flat[v * E + e];
+    }).wait();
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    double duration_ms = std::chrono::duration<double, std::milli>(end_time - start_time).count();
+    std::cout << "Tempo per trasporre la matrice (ms): " << duration_ms << std::endl;
+
+    sycl::free(incidence_flat, q);
+}
+
+
 void find_communities_transpose(HypergraphNotSparse& H) {
-    sycl::queue q(sycl::default_selector_v, sycl::property::queue::enable_profiling{});
+    sycl::queue q;
+    try {
+        sycl::queue q(sycl::gpu_selector_v);
+        std::cout << "Selected device: "
+                << q.get_device().get_info<sycl::info::device::name>() << std::endl;
+    } catch (sycl::exception const& e) {
+        std::cerr << "Failed to create SYCL queue: " << e.what() << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     const size_t N = H.num_vertices;
     const size_t E = H.num_hyperedges;
 
@@ -138,28 +181,7 @@ void find_communities_transpose(HypergraphNotSparse& H) {
     size_t* edge_indices_usm = sycl::malloc_shared<size_t>(E, q);
     size_t* vertex_indices_usm = sycl::malloc_shared<size_t>(N, q);
 
-    
-    // std::cout << "Incidence matrix:\n";
-    // for (size_t i = 0; i < H.num_vertices; ++i) {
-    //     for (size_t j = 0; j < H.num_hyperedges; ++j) {
-    //         std::cout << H.incidence_matrix[i][j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
-
-    for (size_t v = 0; v < N; ++v) {
-        for (size_t e = 0; e < H.incidence_matrix[v].size(); ++e) {
-            incidence_matrix_T[e * N + v] = H.incidence_matrix[v][e];
-        }
-    }
-
-    // std::cout << "Incidence matrix transposed:\n";
-    // for (size_t i = 0; i < E; ++i) {
-    //     for (size_t j = 0; j < N; ++j) {
-    //         std::cout << incidence_matrix_T[i * N + j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
+    transpose_incidence_matrix(q, H.incidence_matrix, incidence_matrix_T, N, E);
 
     std::copy(H.vertex_labels.begin(), H.vertex_labels.end(), vlabels_usm);
     std::copy(H.hyperedge_labels.begin(), H.hyperedge_labels.end(), helabels_usm);
@@ -179,19 +201,19 @@ void find_communities_transpose(HypergraphNotSparse& H) {
         sycl::event edge_event = q.submit([&](sycl::handler& h) {
             h.parallel_for(sycl::range<1>(E), [=](sycl::id<1> idx) {
                 size_t e = edge_indices_usm[idx];
-                uint32_t label_counts[1024] = {0};
+                uint32_t label_counts[128] = {0};
 
                 for (size_t v = 0; v < N; ++v) {
                     if (incidence_matrix_T[e * N + v] == 1) {
                         uint32_t lbl = vlabels_usm[v];
-                        if (lbl < 1024 && lbl != std::numeric_limits<uint32_t>::max()) {
+                        if (lbl < 128 && lbl != std::numeric_limits<uint32_t>::max()) {
                             label_counts[lbl]++;
                         }
                     }
                 }
 
                 uint32_t max_count = 0, best_label = std::numeric_limits<uint32_t>::max();
-                for (size_t i = 0; i < 1024; ++i) {
+                for (size_t i = 0; i < 128; ++i) {
                     if (label_counts[i] > max_count) {
                         max_count = label_counts[i];
                         best_label = i;
@@ -214,19 +236,19 @@ void find_communities_transpose(HypergraphNotSparse& H) {
         sycl::event vertex_event = q.submit([&](sycl::handler& h) {
             h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                 size_t v = vertex_indices_usm[idx];
-                uint32_t label_counts[1024] = {0};
+                uint32_t label_counts[128] = {0};
 
                 for (size_t e = 0; e < E; ++e) {
                     if (incidence_matrix_T[e * N + v] == 1) {
                         uint32_t lbl = helabels_usm[e];
-                        if (lbl < 1024 && lbl != std::numeric_limits<uint32_t>::max()) {
+                        if (lbl < 128 && lbl != std::numeric_limits<uint32_t>::max()) {
                             label_counts[lbl]++;
                         }
                     }
                 }
 
                 uint32_t max_count = 0, best_label = vlabels_usm[v];
-                for (size_t i = 0; i < 1024; ++i) {
+                for (size_t i = 0; i < 128; ++i) {
                     if (label_counts[i] > max_count) {
                         max_count = label_counts[i];
                         best_label = i;
