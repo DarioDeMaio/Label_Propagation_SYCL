@@ -139,6 +139,31 @@ void find_communities(HypergraphNotSparse& H) {
     sycl::free(vertex_indices_usm, q);
 }
 
+// void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<uint32_t>>& incidence_matrix, uint32_t* incidence_matrix_T, size_t N, size_t E) {
+
+//     uint32_t* incidence_flat = sycl::malloc_shared<uint32_t>(N * E, q);
+
+//     for (size_t v = 0; v < N; ++v) {
+//         for (size_t e = 0; e < E; ++e) {
+//             incidence_flat[v * E + e] = incidence_matrix[v][e];
+//         }
+//     }
+
+//     auto start_time = std::chrono::high_resolution_clock::now();
+
+//     q.parallel_for(sycl::range<2>(E, N), [=](sycl::id<2> idx) {
+//         size_t e = idx[0];
+//         size_t v = idx[1];
+//         incidence_matrix_T[e * N + v] = incidence_flat[v * E + e];
+//     }).wait();
+
+//     auto end_time = std::chrono::high_resolution_clock::now();
+//     double duration_ms = std::chrono::duration<double, std::milli>(end_time - start_time).count();
+//     std::cout << "Tempo per trasporre la matrice (ms): " << duration_ms << std::endl;
+
+//     sycl::free(incidence_flat, q);
+// }
+
 void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<uint32_t>>& incidence_matrix, uint32_t* incidence_matrix_T, size_t N, size_t E) {
     uint32_t* incidence_flat = sycl::malloc_shared<uint32_t>(N * E, q);
 
