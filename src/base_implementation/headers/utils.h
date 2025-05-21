@@ -18,3 +18,4 @@ struct HypergraphNotSparse
 HypergraphNotSparse generate_hypergraph(std::size_t N, std::size_t E, double p);
 
 #endif
+

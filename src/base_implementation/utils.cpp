@@ -4,6 +4,7 @@
 #include<vector>
 #include<limits>
 #include<string>
+#include<iostream>
 
 HypergraphNotSparse generate_hypergraph(std::size_t N, std::size_t E, double p) {
     HypergraphNotSparse H;
@@ -15,12 +16,12 @@ HypergraphNotSparse generate_hypergraph(std::size_t N, std::size_t E, double p) 
     std::bernoulli_distribution dist(p);
 
     H.incidence_matrix.resize(N);
-    for (size_t i = 0; i < N; ++i) {
+    for (std::size_t i = 0; i < N; ++i) {
         H.incidence_matrix[i].resize(E, 0);
     }
-
-    for (std::uint32_t e = 0; e < E; e++) {
-        for (std::uint32_t v = 0; v < N; v++) {
+    
+    for (std::size_t e = 0; e < E; e++) {
+        for (std::size_t v = 0; v < N; v++) {
             if (dist(gen)) {
                 H.incidence_matrix[v][e] = 1;
             }

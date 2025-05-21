@@ -6,9 +6,12 @@
 #include <chrono>
 #include <sycl/sycl.hpp>
 #include "headers/utils.h"
+#include <CL/sycl.hpp>
+#include <iostream>
 
 using namespace sycl;
 constexpr std::size_t MaxIterations = 100;
+constexpr size_t TILE_SIZE = 16;
 
 void find_communities(HypergraphNotSparse& H) {
     sycl::queue q;
@@ -137,8 +140,6 @@ void find_communities(HypergraphNotSparse& H) {
 }
 
 void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<uint32_t>>& incidence_matrix, uint32_t* incidence_matrix_T, size_t N, size_t E) {
-    auto start_time = std::chrono::high_resolution_clock::now();
-
     uint32_t* incidence_flat = sycl::malloc_shared<uint32_t>(N * E, q);
 
     for (size_t v = 0; v < N; ++v) {
@@ -147,10 +148,33 @@ void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<ui
         }
     }
 
-    q.parallel_for(sycl::range<2>(E, N), [=](sycl::id<2> idx) {
-        size_t e = idx[0];
-        size_t v = idx[1];
-        incidence_matrix_T[e * N + v] = incidence_flat[v * E + e];
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    q.submit([&](sycl::handler& h) {
+        sycl::local_accessor<uint32_t, 2> tile(sycl::range<2>(TILE_SIZE, TILE_SIZE), h);
+
+        h.parallel_for(sycl::nd_range<2>(
+                           sycl::range<2>((E + TILE_SIZE - 1) / TILE_SIZE * TILE_SIZE,
+                                          (N + TILE_SIZE - 1) / TILE_SIZE * TILE_SIZE),
+                           sycl::range<2>(TILE_SIZE, TILE_SIZE)),
+                       [=](sycl::nd_item<2> item) {
+            size_t e = item.get_global_id(0);
+            size_t v = item.get_global_id(1);
+            size_t local_e = item.get_local_id(0);
+            size_t local_v = item.get_local_id(1);
+
+            if (v < N && e < E) {
+                tile[local_v][local_e] = incidence_flat[v * E + e];
+            }
+            item.barrier(sycl::access::fence_space::local_space);
+
+            size_t transposed_e = item.get_group(1) * TILE_SIZE + local_e;
+            size_t transposed_v = item.get_group(0) * TILE_SIZE + local_v;
+
+            if (transposed_v < N && transposed_e < E) {
+                incidence_matrix_T[transposed_e * N + transposed_v] = tile[local_e][local_v];
+            }
+        });
     }).wait();
 
     auto end_time = std::chrono::high_resolution_clock::now();
@@ -159,7 +183,6 @@ void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<ui
 
     sycl::free(incidence_flat, q);
 }
-
 
 void find_communities_transpose(HypergraphNotSparse& H) {
     sycl::queue q;

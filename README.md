@@ -39,5 +39,5 @@ The third optimization balances the workload across GPU workgroups by ensuring t
 To compile the code with SYCL and optimizations:
 ```
 icpx -O2 -fsycl "2_baseline_label_propagation_transpose.cpp" "../base_implementation/algorithms.cpp" "../base_implementation/utils.cpp" -o "label_prop.exe"
-./"label_prop.exe"
+./"label_prop.exe" num_nodes num_hyperedges density
 ```

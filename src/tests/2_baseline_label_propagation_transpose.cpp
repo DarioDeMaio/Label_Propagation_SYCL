@@ -13,14 +13,19 @@
 #include <chrono>
 #include <sycl/sycl.hpp>
 
-int main() {
-    std::size_t num_vertices = 1000000;
-    std::size_t num_hyperedges = 5000000;
-    double probability = 0.3;
+int main(int argc, char** argv) {
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <num_vertices> <num_hyperedges> <probability>" << std::endl;
+        return 1;
+    }
 
-    // std::cout << "Generating hypergraph..." << std::endl;
+    std::size_t num_vertices = std::stoul(argv[1]);
+    std::size_t num_hyperedges = std::stoul(argv[2]);
+    double probability = std::stod(argv[3]);
+
+    std::cout << "Generating hypergraph..." << std::endl;
     HypergraphNotSparse H = generate_hypergraph(num_vertices, num_hyperedges, probability);
-    // std::cout << "Done." << std::endl;
+    std::cout << "Done." << std::endl;
 
     // std::cout << "Number of vertices: " << H.num_vertices << std::endl;
     // std::cout << "Number of hyperedges: " << H.num_hyperedges << std::endl;
@@ -55,11 +60,11 @@ int main() {
     //               << "\n";
     // }
 
-    std::cout << "Baseline Label Propagation:\n" << std::endl;
+    std::cout << std::endl << "Baseline Label Propagation:" << std::endl;
     find_communities(H);
-    std::cout << "Optimized Label Propagation:\n" << std::endl;
+    std::cout<< std::endl << "Optimized Label Propagation:" << std::endl;
     find_communities_transpose(H);
-    // std::cout << "Done." << std::endl;
+    std::cout << "Done." << std::endl;
 
     // std::cout << "\nSize vertex_labels: " << H.vertex_labels.size() << "\n";
     // std::cout << "Size hyperedge_labels: " << H.hyperedge_labels.size() << "\n";
