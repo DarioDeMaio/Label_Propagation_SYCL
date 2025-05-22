@@ -13,6 +13,16 @@
 #include <chrono>
 #include <sycl/sycl.hpp>
 
+HypergraphNotSparse clone_hypergraph(const HypergraphNotSparse& original) {
+    HypergraphNotSparse copy;
+    copy.num_vertices = original.num_vertices;
+    copy.num_hyperedges = original.num_hyperedges;
+    copy.incidence_matrix = original.incidence_matrix;
+    copy.vertex_labels = original.vertex_labels;
+    copy.hyperedge_labels = original.hyperedge_labels;
+    return copy;
+}
+
 int main(int argc, char** argv) {
     if (argc != 4) {
         std::cerr << "Usage: " << argv[0] << " <num_vertices> <num_hyperedges> <probability>" << std::endl;
@@ -25,6 +35,7 @@ int main(int argc, char** argv) {
 
     std::cout << "Generating hypergraph..." << std::endl;
     HypergraphNotSparse H = generate_hypergraph(num_vertices, num_hyperedges, probability);
+    HypergraphNotSparse H_clone = clone_hypergraph(H);
     std::cout << "Done." << std::endl;
 
     // std::cout << "Number of vertices: " << H.num_vertices << std::endl;
@@ -63,7 +74,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl << "Baseline Label Propagation:" << std::endl;
     find_communities(H);
     std::cout<< std::endl << "Optimized Label Propagation:" << std::endl;
-    find_communities_transpose(H);
+    find_communities_transpose(H_clone);
     std::cout << "Done." << std::endl;
 
     // std::cout << "\nSize vertex_labels: " << H.vertex_labels.size() << "\n";

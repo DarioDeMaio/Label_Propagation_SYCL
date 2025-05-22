@@ -1,40 +1,42 @@
+#include <algorithm>
+#include <unordered_map>
+#include <limits>
 #include <iostream>
-#include "headers/utils.h"
+#include <random>
+#include <numeric>
+#include <vector>
+#include <cstdint>
+#include <limits>
+#include <string>
+#include "../base_implementation/headers/algorithms.h"
+#include "../base_implementation/headers/utils.h"
+#include <chrono>
+#include <sycl/sycl.hpp>
+#include <unordered_set>
+#include <cstdint>
 
 int main() {
-    std::size_t N = 5;
-    std::size_t E = 3;
-    double p = 0.5;
+    std::size_t N = 100;
+    std::size_t E = 250;
+    double p_unused = 0.5; // ignorato nella versione power-law, serviva per la funzione precedente
 
-    Hypergraph H = generate_hypergraph(N, E, p);
+    std::cout << "Generazione ipergrafo con distribuzione power-law..." << std::endl;
+    HypergraphNotSparse H = generate_hypergraph(N, E, p_unused);
 
-    std::cout << "Number of vertices: " << H.num_vertices << std::endl;
-    std::cout << "Number of hyperedges: " << H.num_hyperedges << std::endl;
-
-    std::cout << "Vertex labels: ";
-    for (auto label : H.vertex_labels) {
-        std::cout << label << " ";
+    std::cout << "\nGrado dei nodi (quanti iperarchi tocca ogni nodo):\n";
+    for (std::size_t i = 0; i < N; ++i) {
+        int degree = std::accumulate(H.incidence_matrix[i].begin(), H.incidence_matrix[i].end(), 0);
+        std::cout << "v" << i << ": " << degree << "\n";
     }
-    std::cout << std::endl;
 
-    std::cout << "Hyperedge labels: ";
-    for (auto label : H.hyperedge_labels) {
-        std::cout << label << " ";
+    std::cout << "\nGrado degli iperarchi (quanti nodi contiene ogni iperarco):\n";
+    for (std::size_t j = 0; j < E; ++j) {
+        int degree = 0;
+        for (std::size_t i = 0; i < N; ++i) {
+            degree += H.incidence_matrix[i][j];
+        }
+        std::cout << "e" << j << ": " << degree << "\n";
     }
-    std::cout << std::endl;
-
-    std::cout << "he2v index: ";
-    for (auto index : H.he2v_indices) {
-        std::cout << index << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "he2v offset: ";
-    for (auto offset : H.he2v_offsets) {
-        std::cout << offset << " ";
-    }
-    std::cout << std::endl;
 
     return 0;
 }
-
