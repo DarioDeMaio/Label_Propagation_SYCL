@@ -213,14 +213,6 @@ void find_communities_transpose(HypergraphNotSparse& H) {
     try {
         sycl::queue q(sycl::gpu_selector_v);
         std::cout << "Selected device: " << q.get_device().get_info<sycl::info::device::name>() << std::endl;
-        // std::cout << "Backend: "
-        //   << q.get_device().get_platform().get_info<sycl::info::platform::name>() << std::endl;
-        // auto dev = q.get_device();
-        // auto platform = dev.get_platform();
-        // std::cout << "Device: " << dev.get_info<sycl::info::device::name>() << "\n";
-        // std::cout << "Vendor: " << dev.get_info<sycl::info::device::vendor>() << "\n";
-        // std::cout << "Platform: " << platform.get_info<sycl::info::platform::name>() << "\n";
-        // std::cout << "Backend: " << platform.get_info<sycl::info::platform::vendor>() << "\n";
     } catch (sycl::exception const& e) {
         std::cerr << "Failed to create SYCL queue: " << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
