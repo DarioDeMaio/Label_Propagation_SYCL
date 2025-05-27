@@ -15,7 +15,7 @@ constexpr size_t TILE_SIZE = 16;
 void find_communities(HypergraphNotSparse& H) {
     sycl::queue q;
     try {
-        sycl::queue q(sycl::gpu_selector_v);
+        q = sycl::queue(sycl::gpu_selector_v);
         std::cout << "Selected device: "
                 << q.get_device().get_info<sycl::info::device::name>() << std::endl;
     } catch (sycl::exception const& e) {
@@ -43,15 +43,19 @@ void find_communities(HypergraphNotSparse& H) {
 
     bool stop_flag_host = true;
     size_t iter = 0;
+    
+    std::vector<size_t> edge_indices(E);
+    std::iota(edge_indices.begin(), edge_indices.end(), 0);
+    std::copy(edge_indices.begin(), edge_indices.end(), edge_indices_usm);
+
+    std::vector<size_t> vertex_indices(N);
+    std::iota(vertex_indices.begin(), vertex_indices.end(), 0);
+    std::copy(vertex_indices.begin(), vertex_indices.end(), vertex_indices_usm);
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
     while (stop_flag_host && iter < MaxIterations) {
         stop_flag_host = true;
-
-        std::vector<size_t> edge_indices(E);
-        std::iota(edge_indices.begin(), edge_indices.end(), 0);
-        std::copy(edge_indices.begin(), edge_indices.end(), edge_indices_usm);
 
         sycl::event edge_event = q.submit([&](sycl::handler& h) {
             h.parallel_for(range<1>(E), [=](id<1> idx) {
@@ -81,10 +85,6 @@ void find_communities(HypergraphNotSparse& H) {
         });
         edge_event.wait();
 
-        std::vector<size_t> vertex_indices(N);
-        std::iota(vertex_indices.begin(), vertex_indices.end(), 0);
-        std::copy(vertex_indices.begin(), vertex_indices.end(), vertex_indices_usm);
-
         bool* stop_flag_device = sycl::malloc_shared<bool>(1, q);
         *stop_flag_device = true;
 
@@ -111,8 +111,12 @@ void find_communities(HypergraphNotSparse& H) {
                 }
 
                 if (vlabels_usm[v] != best_label && best_label != std::numeric_limits<uint8_t>::max()) {
-                    vlabels_usm[v] = best_label;
-                    *stop_flag_device = false;
+                vlabels_usm[v] = best_label;
+                sycl::atomic_ref<bool, sycl::memory_order::relaxed,
+                    sycl::memory_scope::device,
+                    sycl::access::address_space::global_space> atomic_stop_flag(*stop_flag_device);
+                atomic_stop_flag.store(false);
+            }
                 }
             });
         });

@@ -75,9 +75,9 @@ int main(int argc, char** argv) {
     find_communities(H);
     std::cout << "Done." << std::endl;
 
-    std::cout << std::endl << "Optimized Label Propagation:" << std::endl;
-    find_communities_transpose(H_clone);
-    std::cout << "Done." << std::endl;
+    // std::cout << std::endl << "Optimized Label Propagation:" << std::endl;
+    // find_communities_transpose(H_clone);
+    // std::cout << "Done." << std::endl;
 
     // std::cout << "\nSize vertex_labels: " << H_clone.vertex_labels.size() << "\n";
     // std::cout << "Size hyperedge_labels: " << H_clone.hyperedge_labels.size() << "\n";
@@ -104,6 +104,6 @@ int main(int argc, char** argv) {
 //         std::cout << "e" << i << ": " << static_cast<int>(H_clone.hyperedge_labels[i]) << "\n";
 //     }
 
-//     return 0;
-// }
+    return 0;
+}
 
