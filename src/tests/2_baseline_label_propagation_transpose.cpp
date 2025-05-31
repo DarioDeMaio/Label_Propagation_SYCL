@@ -43,13 +43,13 @@ int main(int argc, char** argv) {
 
     // std::cout << "Initial vertex labels: ";
     // for (auto label : H_clone.vertex_labels) {
-    //     std::cout << label << " ";
+    //     std::cout << static_cast<int>(label) << " ";
     // }
     // std::cout << std::endl;
 
     // std::cout << "Initial hyperedge labels: ";
     // for (auto label : H_clone.hyperedge_labels) {
-    //     std::cout << label << " ";
+    //     std::cout << static_cast<int>(label) << " ";
     // }
     // std::cout << std::endl;
 
@@ -63,8 +63,8 @@ int main(int argc, char** argv) {
 
     // std::cout << "----------------------------------------------" << std::endl;
 
-    // std::cout << "Initial vertex labels:\n";
-    // for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
+    // std::cout << "Initial H_clone vertex labels:\n";
+    // for (std::size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
     //     auto label = H_clone.vertex_labels[i];
     //     std::cout << "v" << i << ": " 
     //               << (label == std::numeric_limits<uint8_t>::max() ? "?" : std::to_string(label)) 
@@ -82,27 +82,27 @@ int main(int argc, char** argv) {
     // std::cout << "\nSize vertex_labels: " << H_clone.vertex_labels.size() << "\n";
     // std::cout << "Size hyperedge_labels: " << H_clone.hyperedge_labels.size() << "\n";
 
-//     std::cout << "\nFinal vertex labels:\n";
-//     for (std::size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
-//         std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << "\n";
-//     }
+    // std::cout << "\nFinal vertex labels:\n";
+    // for (std::size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
+    //     std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << "\n";
+    // }
 
-//     std::cout << "\nFinal hyperedge labels:\n";
-//     for (std::size_t i = 0; i < H_clone.hyperedge_labels.size(); ++i) {
-//         std::cout << "e" << i << ": " << static_cast<int>(H_clone.hyperedge_labels[i]) << "\n";
-//     }
+    // std::cout << "\nFinal hyperedge labels:\n";
+    // for (std::size_t i = 0; i < H_clone.hyperedge_labels.size(); ++i) {
+    //     std::cout << "e" << i << ": " << static_cast<int>(H_clone.hyperedge_labels[i]) << "\n";
+    // }
 
-//     std::cout << "\n*****************************************************************************************\n";
+    // std::cout << "\n*****************************************************************************************\n";
 
-//     std::cout << "\nFinal vertex labels:\n";
-//     for (std::size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
-//         std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << "\n";
-//     }
+    // std::cout << "\nFinal vertex labels:\n";
+    // for (std::size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
+    //     std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << "\n";
+    // }
 
-//     std::cout << "\nFinal hyperedge labels:\n";
-//     for (std::size_t i = 0; i < H_clone.hyperedge_labels.size(); ++i) {
-//         std::cout << "e" << i << ": " << static_cast<int>(H_clone.hyperedge_labels[i]) << "\n";
-//     }
+    // std::cout << "\nFinal hyperedge labels:\n";
+    // for (std::size_t i = 0; i < H_clone.hyperedge_labels.size(); ++i) {
+    //     std::cout << "e" << i << ": " << static_cast<int>(H_clone.hyperedge_labels[i]) << "\n";
+    // }
 
     return 0;
 }
