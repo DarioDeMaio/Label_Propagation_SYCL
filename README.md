@@ -41,3 +41,11 @@ To compile the code with SYCL and optimizations:
 icpx -O2 -fsycl -fsycl-targets=nvptx64-nvidia-cuda "2_baseline_label_propagation_transpose.cpp" "../base_implementation/algorithms.cpp" "../base_implementation/utils.cpp" -o "label_prop.exe"
 ./"label_prop.exe" num_nodes num_hyperedges density
 ```
+
+per fare profiling in powershell admin:
+- apri la shell di oneapi,
+- compilare come fatto prima
+- lanciare:
+- ncu --set full --kernel-name regex:.* --export myprofile.ncu-rep ./label_prop.exe 100 1000 0.5
+
+
