@@ -145,7 +145,7 @@ void find_communities(HypergraphNotSparse& H) {
     sycl::free(stop_flag_dev, q);
 }
 
-void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<uint8_t>>& incidence_matrix, uint8_t* incidence_matrix_T, size_t N, size_t E) {
+void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<uint8_t>>& incidence_matrix, uint8_t* incidence_matrix_T, uint8_t* incidence_matrix_dev, size_t N, size_t E) {
     uint8_t* incidence_flat = sycl::malloc_shared<uint8_t>(N * E, q);
 
     for (size_t v = 0; v < N; ++v) {
@@ -153,6 +153,7 @@ void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<ui
             incidence_flat[v * E + e] = incidence_matrix[v][e];
         }
     }
+    q.memcpy(incidence_matrix_dev, incidence_flat, N * E).wait();
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -201,25 +202,30 @@ void find_communities_transpose(HypergraphNotSparse& H) {
     const size_t E = H.num_hyperedges;
     constexpr size_t WorkGroupSize = 128;
 
-    uint8_t* incidence_matrix_T_dev = sycl::malloc_device<uint8_t>(N * E, q);
+    uint8_t* incidence_matrix_T_dev = sycl::malloc_device<uint8_t>(E * N, q);
+    uint8_t* incidence_matrix_dev = sycl::malloc_device<uint8_t>(N * E, q);
     uint8_t* vlabels_dev = sycl::malloc_device<uint8_t>(N, q);
     uint8_t* helabels_dev = sycl::malloc_device<uint8_t>(E, q);
     int* stop_flag_dev = sycl::malloc_device<int>(1, q);
 
-    transpose_incidence_matrix(q, H.incidence_matrix, incidence_matrix_T_dev, N, E);
+    transpose_incidence_matrix(q, H.incidence_matrix, incidence_matrix_T_dev, incidence_matrix_dev, N, E);
     
-    std::vector<uint8_t> incidence_matrix_T_host(N * E);
-    q.memcpy(incidence_matrix_T_host.data(), incidence_matrix_T_dev, N * E).wait();
+    // std::vector<uint8_t> incidence_matrix_T_host(N * E);
+    // q.memcpy(incidence_matrix_T_host.data(), incidence_matrix_T_dev, N * E).wait();
 
     // std::cout << "Incidence matrix (transposed):\n";
-    // for (size_t e = 0; e < E; ++e) {
-    //     for (size_t v = 0; v < N; ++v) {
-    //         std::cout << static_cast<int>(incidence_matrix_T_host[v * E + e]) << ' ';
-    //     }
-    //     std::cout << '\n';
+    // for (size_t e = 0; e < E * N; ++e) {
+    //     std::cout << static_cast<int>(incidence_matrix_T_host[e]) << ' ';
     // }
 
-    std::cout << std::endl;
+    // std::vector<uint8_t> incidence_matrix_T_host2(N * E);
+    // q.memcpy(incidence_matrix_T_host2.data(), incidence_matrix_dev, N * E).wait();
+
+    // std::cout << "\n\nIncidence matrix (normal):\n";
+    // for (size_t e = 0; e < E * N; ++e) {
+    //     std::cout << static_cast<int>(incidence_matrix_T_host2[e]) << ' ';
+    // }
+
     q.memcpy(vlabels_dev, H.vertex_labels.data(), N).wait();
     q.memcpy(helabels_dev, H.hyperedge_labels.data(), E).wait();
 
@@ -280,7 +286,7 @@ void find_communities_transpose(HypergraphNotSparse& H) {
                     for (size_t i = 0; i < MaxLabels; ++i) label_counts[i] = 0;
 
                     for (size_t e = 0; e < E; ++e) {
-                        if (incidence_matrix_T_dev[v * E + e] == 1) {
+                        if (incidence_matrix_dev[e * N + v] == 1) {
                             uint8_t lbl = helabels_dev[e];
                             if (lbl < MaxLabels && lbl != std::numeric_limits<uint8_t>::max()) {
                                 label_counts[lbl]++;
