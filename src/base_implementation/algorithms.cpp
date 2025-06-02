@@ -204,22 +204,6 @@ void find_communities_transpose(HypergraphNotSparse& H) {
     int* stop_flag_dev = sycl::malloc_device<int>(1, q);
 
     transpose_incidence_matrix(q, H.incidence_matrix, incidence_matrix_T_dev, incidence_matrix_dev, N, E);
-    
-    // std::vector<uint8_t> incidence_matrix_T_host(N * E);
-    // q.memcpy(incidence_matrix_T_host.data(), incidence_matrix_T_dev, N * E).wait();
-
-    // std::cout << "Incidence matrix (transposed):\n";
-    // for (size_t e = 0; e < E * N; ++e) {
-    //     std::cout << static_cast<int>(incidence_matrix_T_host[e]) << ' ';
-    // }
-
-    // std::vector<uint8_t> incidence_matrix_T_host2(N * E);
-    // q.memcpy(incidence_matrix_T_host2.data(), incidence_matrix_dev, N * E).wait();
-
-    // std::cout << "\n\nIncidence matrix (normal):\n";
-    // for (size_t e = 0; e < E * N; ++e) {
-    //     std::cout << static_cast<int>(incidence_matrix_T_host2[e]) << ' ';
-    // }
 
     q.memcpy(vlabels_dev, H.vertex_labels.data(), N).wait();
     q.memcpy(helabels_dev, H.hyperedge_labels.data(), E).wait();
