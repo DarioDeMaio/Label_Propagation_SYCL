@@ -12,6 +12,7 @@
 using namespace sycl;
 constexpr std::size_t MaxIterations = 100;
 constexpr size_t TILE_SIZE = 16;
+constexpr size_t WorkGroupSize = 128;
 constexpr std::size_t MaxLabels = 16;
 
 void find_communities(HypergraphNotSparse& H) {
@@ -19,7 +20,6 @@ void find_communities(HypergraphNotSparse& H) {
 
     const size_t N = H.num_vertices;
     const size_t E = H.num_hyperedges;
-    constexpr size_t WorkGroupSize = 128;
 
     uint8_t* incidence_matrix_dev = sycl::malloc_device<uint8_t>(N * E, q);
     uint8_t* vlabels_dev = sycl::malloc_device<uint8_t>(N, q);
@@ -27,19 +27,17 @@ void find_communities(HypergraphNotSparse& H) {
     int* stop_flag_dev = sycl::malloc_device<int>(1, q);
 
     std::vector<uint8_t> flat_incidence(N * E, 0);
-    for (size_t i = 0; i < N; ++i) {
-        for (size_t j = 0; j < H.incidence_matrix[i].size(); ++j) {
+    for (size_t i = 0; i < N; ++i)
+        for (size_t j = 0; j < H.incidence_matrix[i].size(); ++j)
             flat_incidence[i * E + j] = H.incidence_matrix[i][j];
-        }
-    }
 
     q.memcpy(incidence_matrix_dev, flat_incidence.data(), N * E).wait();
     q.memcpy(vlabels_dev, H.vertex_labels.data(), N).wait();
     q.memcpy(helabels_dev, H.hyperedge_labels.data(), E).wait();
 
     std::vector<int> stop_flag_host(1);
-    size_t iter = 0;
 
+    size_t iter = 0;
     auto start_time = std::chrono::high_resolution_clock::now();
 
     while (iter < MaxIterations) {
@@ -48,7 +46,6 @@ void find_communities(HypergraphNotSparse& H) {
 
         q.submit([&](sycl::handler& h) {
             sycl::local_accessor<uint8_t, 2> label_counts_acc({WorkGroupSize, MaxLabels}, h);
-
             h.parallel_for(
                 sycl::nd_range<1>(((E + WorkGroupSize - 1) / WorkGroupSize) * WorkGroupSize, WorkGroupSize),
                 [=](sycl::nd_item<1> idx) {
@@ -56,7 +53,6 @@ void find_communities(HypergraphNotSparse& H) {
                     if (e >= E) return;
 
                     auto label_counts = label_counts_acc[idx.get_local_id(0)];
-
                     for (size_t i = 0; i < MaxLabels; ++i) label_counts[i] = 0;
 
                     for (size_t v = 0; v < N; ++v) {
@@ -84,7 +80,6 @@ void find_communities(HypergraphNotSparse& H) {
 
         q.submit([&](sycl::handler& h) {
             sycl::local_accessor<uint8_t, 2> label_counts_acc({WorkGroupSize, MaxLabels}, h);
-
             h.parallel_for(
                 sycl::nd_range<1>(((N + WorkGroupSize - 1) / WorkGroupSize) * WorkGroupSize, WorkGroupSize),
                 [=](sycl::nd_item<1> idx) {
@@ -92,7 +87,6 @@ void find_communities(HypergraphNotSparse& H) {
                     if (v >= N) return;
 
                     auto label_counts = label_counts_acc[idx.get_local_id(0)];
-
                     for (size_t i = 0; i < MaxLabels; ++i) label_counts[i] = 0;
 
                     for (size_t e = 0; e < E; ++e) {
@@ -106,7 +100,6 @@ void find_communities(HypergraphNotSparse& H) {
 
                     uint8_t max_count = 0;
                     uint8_t best_label = vlabels_dev[v];
-
                     for (size_t i = 0; i < MaxLabels; ++i) {
                         if (label_counts[i] > max_count) {
                             max_count = label_counts[i];
@@ -128,13 +121,15 @@ void find_communities(HypergraphNotSparse& H) {
 
         q.memcpy(stop_flag_host.data(), stop_flag_dev, sizeof(int)).wait();
         if (stop_flag_host[0] == 0) break;
-
         iter++;
     }
 
     auto end_time = std::chrono::high_resolution_clock::now();
     double total_time_ms = std::chrono::duration<double, std::milli>(end_time - start_time).count();
     std::cout << "Tempo totale ottimizzato (ms): " << total_time_ms << std::endl;
+
+    assert(H.vertex_labels.size() == N && "vertex_labels size mismatch");
+    assert(H.hyperedge_labels.size() == E && "hyperedge_labels size mismatch");
 
     q.memcpy(H.vertex_labels.data(), vlabels_dev, N).wait();
     q.memcpy(H.hyperedge_labels.data(), helabels_dev, E).wait();

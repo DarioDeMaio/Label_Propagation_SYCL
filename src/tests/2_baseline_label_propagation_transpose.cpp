@@ -17,9 +17,14 @@ HypergraphNotSparse clone_hypergraph(const HypergraphNotSparse& original) {
     HypergraphNotSparse copy;
     copy.num_vertices = original.num_vertices;
     copy.num_hyperedges = original.num_hyperedges;
-    copy.incidence_matrix = original.incidence_matrix;
+
+    copy.incidence_matrix.resize(original.incidence_matrix.size());
+    for (size_t i = 0; i < original.incidence_matrix.size(); ++i)
+        copy.incidence_matrix[i] = original.incidence_matrix[i];
+
     copy.vertex_labels = original.vertex_labels;
     copy.hyperedge_labels = original.hyperedge_labels;
+
     return copy;
 }
 
@@ -83,13 +88,13 @@ int main(int argc, char** argv) {
     // std::cout << "Size hyperedge_labels: " << H_clone.hyperedge_labels.size() << "\n";
 
     // std::cout << "\nFinal vertex labels:\n";
-    // for (std::size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
-    //     std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << "\n";
+    // for (std::size_t i = 0; i < H.vertex_labels.size(); ++i) {
+    //     std::cout << "v" << i << ": " << static_cast<int>(H.vertex_labels[i]) << "\n";
     // }
 
     // std::cout << "\nFinal hyperedge labels:\n";
-    // for (std::size_t i = 0; i < H_clone.hyperedge_labels.size(); ++i) {
-    //     std::cout << "e" << i << ": " << static_cast<int>(H_clone.hyperedge_labels[i]) << "\n";
+    // for (std::size_t i = 0; i < H.hyperedge_labels.size(); ++i) {
+    //     std::cout << "e" << i << ": " << static_cast<int>(H.hyperedge_labels[i]) << "\n";
     // }
 
     // std::cout << "\n*****************************************************************************************\n";
