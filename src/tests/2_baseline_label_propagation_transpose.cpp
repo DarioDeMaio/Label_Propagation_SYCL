@@ -66,22 +66,12 @@ int main(int argc, char** argv) {
     //     std::cout << std::endl;
     // }
 
-    // std::cout << "----------------------------------------------" << std::endl;
-
-    // std::cout << "Initial H_clone vertex labels:\n";
-    // for (std::size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
-    //     auto label = H_clone.vertex_labels[i];
-    //     std::cout << "v" << i << ": " 
-    //               << (label == std::numeric_limits<uint8_t>::max() ? "?" : std::to_string(label)) 
-    //               << "\n";
-    // }
-
     std::cout << std::endl << "Baseline Label Propagation:" << std::endl;
-    find_communities(H);
+    find_communities(H_clone);
     std::cout << "Done." << std::endl;
 
     std::cout << std::endl << "Optimized Label Propagation:" << std::endl;
-    find_communities_transpose(H_clone);
+    find_communities_transpose(H);
     std::cout << "Done." << std::endl;
 
     // std::cout << "\nSize vertex_labels: " << H_clone.vertex_labels.size() << "\n";
@@ -108,6 +98,14 @@ int main(int argc, char** argv) {
     // for (std::size_t i = 0; i < H_clone.hyperedge_labels.size(); ++i) {
     //     std::cout << "e" << i << ": " << static_cast<int>(H_clone.hyperedge_labels[i]) << "\n";
     // }
+
+    // std::cout << "\n*****************************************************************************************\n";
+
+    for(size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
+        if (H_clone.vertex_labels[i] != H.vertex_labels[i]) {
+            std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << " != " << static_cast<int>(H.vertex_labels[i]) << "\n";
+        }
+    }
 
     return 0;
 }

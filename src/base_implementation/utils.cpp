@@ -15,7 +15,7 @@ HypergraphNotSparse generate_hypergraph(std::size_t N, std::size_t E, double p) 
     std::mt19937 gen(42);
     std::bernoulli_distribution dist(p);
 
-    H.incidence_matrix.resize(N, std::vector<uint8_t>(E, 0));
+    H.incidence_matrix.resize(N, std::vector<uint32_t>(E, 0));
 
     for (std::size_t e = 0; e < E; ++e) {
         std::unordered_set<std::size_t> nodes;
@@ -60,12 +60,12 @@ HypergraphNotSparse generate_hypergraph(std::size_t N, std::size_t E, double p) 
         if (labeled(gen)) {
             H.vertex_labels[i] = label_dist(gen);
         } else {
-            H.vertex_labels[i] = std::numeric_limits<std::uint8_t>::max();
+            H.vertex_labels[i] = std::numeric_limits<std::uint32_t>::max();
         }
     }
 
     H.hyperedge_labels.resize(E);
-    std::fill(H.hyperedge_labels.begin(), H.hyperedge_labels.end(), std::numeric_limits<std::uint8_t>::max());
+    std::fill(H.hyperedge_labels.begin(), H.hyperedge_labels.end(), std::numeric_limits<std::uint32_t>::max());
 
     return H;
 }
