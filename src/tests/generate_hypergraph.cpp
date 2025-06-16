@@ -28,7 +28,7 @@ void save_incidence_matrix(const HypergraphNotSparse& H, const std::string& file
     }
 }
 
-void save_labels(const std::vector<std::uint8_t>& labels, const std::string& filename) {
+void save_labels(const std::vector<std::uint32_t>& labels, const std::string& filename) {
     std::ofstream file(filename);
     for (std::size_t i = 0; i < labels.size(); ++i) {
         file << static_cast<int>(labels[i]);
@@ -38,28 +38,18 @@ void save_labels(const std::vector<std::uint8_t>& labels, const std::string& fil
 }
 
 
-int main() {
-    std::size_t N = 15000;
-    std::size_t E = 50000;
-    double p_unused = 0.5; // ignorato nella versione power-law, serviva per la funzione precedente
+int main(int argc, char** argv) {
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <num_vertices> <num_hyperedges> <probability>" << std::endl;
+        return 1;
+    }
+
+    std::size_t N = std::stoul(argv[1]);
+    std::size_t E = std::stoul(argv[2]);
+    double p = std::stod(argv[3]);
 
     std::cout << "Generazione ipergrafo con distribuzione power-law..." << std::endl;
-    HypergraphNotSparse H = generate_hypergraph(N, E, p_unused);
-
-    // std::cout << "\nGrado dei nodi (quanti iperarchi tocca ogni nodo):\n";
-    // for (std::size_t i = 0; i < N; ++i) {
-    //     int degree = std::accumulate(H.incidence_matrix[i].begin(), H.incidence_matrix[i].end(), 0);
-    //     std::cout << "v" << i << ": " << degree << "\n";
-    // }
-
-    // std::cout << "\nGrado degli iperarchi (quanti nodi contiene ogni iperarco):\n";
-    // for (std::size_t j = 0; j < E; ++j) {
-    //     int degree = 0;
-    //     for (std::size_t i = 0; i < N; ++i) {
-    //         degree += H.incidence_matrix[i][j];
-    //     }
-    //     std::cout << "e" << j << ": " << degree << "\n";
-    // }
+    HypergraphNotSparse H = generate_hypergraph(N, E, p);
 
     save_incidence_matrix(H, "incidence_matrix.txt");
     save_labels(H.vertex_labels, "nodes_label.txt");

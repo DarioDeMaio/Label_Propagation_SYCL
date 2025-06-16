@@ -127,7 +127,7 @@ void find_communities(HypergraphNotSparse& H) {
 
     auto end_time = std::chrono::high_resolution_clock::now();
     double total_time_ms = std::chrono::duration<double, std::milli>(end_time - start_time).count();
-    std::cout << "Tempo totale ottimizzato (ms): " << total_time_ms << std::endl;
+    std::cout << "Total time baseline (ms): " << total_time_ms << std::endl;
 
     assert(H.vertex_labels.size() == N && "vertex_labels size mismatch");
     assert(H.hyperedge_labels.size() == E && "hyperedge_labels size mismatch");
@@ -164,7 +164,7 @@ bool checkTransposeCorrectness(uint32_t* originalDev,
         }
     }
 
-    std::cout << "Transpose verification: OK \n";
+    // std::cout << "Transpose verification: OK \n";
     return true;
 }
 
@@ -213,7 +213,7 @@ void transpose_incidence_matrix(sycl::queue& q, const std::vector<std::vector<ui
 
     auto end_time = std::chrono::high_resolution_clock::now();
     double duration_ms = std::chrono::duration<double, std::milli>(end_time - start_time).count();
-    std::cout << "Tempo per trasporre la matrice (ms): " << duration_ms << std::endl;
+    // std::cout << "Tempo per trasporre la matrice (ms): " << duration_ms << std::endl;
 }
 
 void find_communities_transpose(HypergraphNotSparse& H) {
@@ -331,7 +331,7 @@ void find_communities_transpose(HypergraphNotSparse& H) {
 
     auto end_time = std::chrono::high_resolution_clock::now();
     double total_time_ms = std::chrono::duration<double, std::milli>(end_time - start_time).count();
-    std::cout << "Tempo totale ottimizzato (ms): " << total_time_ms << std::endl;
+    std::cout << "Total time transpose (ms): " << total_time_ms << std::endl;
 
     assert(H.vertex_labels.size() == N && "vertex_labels size mismatch");
     assert(H.hyperedge_labels.size() == E && "hyperedge_labels size mismatch");
