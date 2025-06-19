@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
     HypergraphNotSparse H = generate_hypergraph(num_vertices, num_hyperedges, probability);
 
-    find_communities(H_clone);
+    find_communities(H);
 
     return 0;
 }
