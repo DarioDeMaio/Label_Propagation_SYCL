@@ -38,20 +38,25 @@ int main(int argc, char** argv) {
     std::size_t num_hyperedges = std::stoul(argv[2]);
     double probability = std::stod(argv[3]);
 
-    std::cout << "Generating hypergraph..." << std::endl;
+    // std::cout << "Generating hypergraph..." << std::endl;
     HypergraphNotSparse H = generate_hypergraph(num_vertices, num_hyperedges, probability);
     HypergraphNotSparse H_clone = clone_hypergraph(H);
-    std::cout << "Done." << std::endl;
+    // std::cout << "Done." << std::endl;
 
     std::cout << std::endl << "Optimized Label Propagation:" << std::endl;
     find_communities_transpose(H);
     std::cout << "Done." << std::endl;
+    
+    std::cout << std::endl << "Baseline Label Propagation:" << std::endl;
+    find_communities(H_clone);
+    std::cout << "Done." << std::endl;
 
-    // for(size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
-    //     if (H_clone.vertex_labels[i] != H.vertex_labels[i]) {
-    //         std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << " != " << static_cast<int>(H.vertex_labels[i]) << "\n";
-    //     }
-    // }
+    for(size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
+        if (H_clone.vertex_labels[i] != H.vertex_labels[i]) {
+            std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << " != " << static_cast<int>(H.vertex_labels[i]) << "\n";
+        }
+        break;
+    }
 
     return 0;
 }

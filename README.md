@@ -26,7 +26,7 @@ The next optimization leverages compiler-level enhancements through the -O2 flag
 To compile the code with SYCL and optimizations:
 
 ```bash
-icpx -O2 -fsycl -fsycl-targets=nvptx64-nvidia-cuda "2_baseline_label_propagation_transpose.cpp" "../base_implementation/algorithms.cpp" "../base_implementation/utils.cpp" -o "label_prop.exe"
+icpx -O2 -fsycl -fsycl-targets=nvptx64-nvidia-cuda "label_propagation_baseline.cpp" "../base_implementation/algorithms.cpp" "../base_implementation/utils.cpp" -o "label_prop.exe"
 ./"label_prop.exe" num_nodes num_hyperedges density
 ```
 

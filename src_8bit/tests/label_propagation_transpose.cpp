@@ -47,11 +47,15 @@ int main(int argc, char** argv) {
     find_communities_transpose(H);
     std::cout << "Done." << std::endl;
 
-    // for(size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
-    //     if (H_clone.vertex_labels[i] != H.vertex_labels[i]) {
-    //         std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << " != " << static_cast<int>(H.vertex_labels[i]) << "\n";
-    //     }
-    // }
+    std::cout << std::endl << "Baseline Label Propagation:" << std::endl;
+    find_communities(H_clone);
+    std::cout << "Done." << std::endl;
+
+    for(size_t i = 0; i < H_clone.vertex_labels.size(); ++i) {
+        if (H_clone.vertex_labels[i] != H.vertex_labels[i]) {
+            std::cout << "v" << i << ": " << static_cast<int>(H_clone.vertex_labels[i]) << " != " << static_cast<int>(H.vertex_labels[i]) << "\n";
+        }
+    }
 
     return 0;
 }
